@@ -1,11 +1,15 @@
 const qrcode = require("qrcode-terminal");
-const { Client } = require("whatsapp-web.js");
+const { Client, LocalAuth } = require("whatsapp-web.js");
 const { Configuration, OpenAIApi } = require("openai");
 require("dotenv").config();
 
-const client = new Client();
+const client = new Client({
+  authStrategy: new LocalAuth(),
+});
 
 client.initialize();
+
+console.log("hai");
 
 client.on("qr", (qr) => {
   qrcode.generate(qr, { small: true });
@@ -38,7 +42,7 @@ async function runCompletion(msg) {
 client.on("message", async (message) => {
   if (message.body === "!help") {
     message.reply(
-      "list commands \n- !sticker \nmaybe in the future I'll add others hehe -ai"
+      "list commands \n- !sticker (for create sticker from image) \n- !ask (for ask whatever you want) \n\nmaybe in the future I'll add others hehe -ai"
     );
   } else if (message.type === "image" && message.body.startsWith("!sticker")) {
     const media = await message.downloadMedia();
@@ -53,7 +57,6 @@ client.on("message", async (message) => {
       );
     }
 
-    client.sendMessage(message.from, "Please wait...", { quoted: message });
     const response = await runCompletion(msg);
     message.reply(response);
   }
